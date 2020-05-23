@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="site.teamo.mall.dao.StudentDao3">
+    <resultMap id="base_result_map" type="site.teamo.mall.bean.Student">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="age" property="age"/>
+    </resultMap>
+
+    <select id="selectOne" resultMap="base_result_map" parameterType="java.lang.String">
+        select * from student where id = #{id}
+    </select>
+
+    <insert id="insertOne" parameterType="site.teamo.mall.bean.Student">
+        insert into student(id,name,age) values (#{id},#{name},#{age})
+    </insert>
+
+    <update id="updateOne" parameterType="site.teamo.mall.bean.Student">
+        update student set name = #{name},age = #{age} where id = #{id}
+    </update>
+
+    <delete id="deleteOne" parameterType="java.lang.String">
+        delete from student where id = #{id}
+    </delete>
+</mapper>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="site.teamo.mall.dao.StudentDao4">
+    <resultMap id="base_result_map" type="site.teamo.mall.bean.Student">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="age" property="age"/>
+    </resultMap>
+
+    <select id="mySelectOne" parameterType="java.lang.String" resultMap="base_result_map">
+        select * from student where id =#{id}
+    </select>
+</mapper>
