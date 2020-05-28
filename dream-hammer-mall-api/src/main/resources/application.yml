@@ -1,5 +1,5 @@
 server:
-  port: 80
+  port: 8080
   max-http-header-size: 8KB
 
 
@@ -26,3 +26,9 @@ spring:
 mybatis:
   type-aliases-package: site.teamo.mall.bean
   mapper-locations: classpath:mapper/*.xml
+pagehelper:
+  helperDialect: mysql
+  supportMethodsArguments: true
+logging:
+  level:
+    site.teamo.mall.dao: debug

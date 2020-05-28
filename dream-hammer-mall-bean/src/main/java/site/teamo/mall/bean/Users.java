@@ -1,9 +1,18 @@
 package site.teamo.mall.bean;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import java.util.Date;
 
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Users {
     /**
      * 主键id 用户id
@@ -282,5 +291,14 @@ public class Users {
      */
     public void setUpdatedTime(Date updatedTime) {
         this.updatedTime = updatedTime;
+    }
+
+    public void cleanUpSensitiveInformation(){
+        setPassword(null);
+        setMobile(null);
+        setEmail(null);
+        setCreatedTime(null);
+        setUpdatedTime(null);
+        setBirthday(null);
     }
 }

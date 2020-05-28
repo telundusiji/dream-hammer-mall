@@ -1,17 +1,91 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="site.teamo.mall.dao.CategoryMapper" >
-  <resultMap id="BaseResultMap" type="site.teamo.mall.bean.Category" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="name" property="name" jdbcType="VARCHAR" />
-    <result column="type" property="type" jdbcType="INTEGER" />
-    <result column="father_id" property="fatherId" jdbcType="INTEGER" />
-    <result column="logo" property="logo" jdbcType="VARCHAR" />
-    <result column="slogan" property="slogan" jdbcType="VARCHAR" />
-    <result column="cat_image" property="catImage" jdbcType="VARCHAR" />
-    <result column="bg_color" property="bgColor" jdbcType="VARCHAR" />
-  </resultMap>
+<mapper namespace="site.teamo.mall.dao.CategoryMapper">
+    <resultMap id="BaseResultMap" type="site.teamo.mall.bean.Category">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="INTEGER"/>
+        <result column="father_id" property="fatherId" jdbcType="INTEGER"/>
+        <result column="logo" property="logo" jdbcType="VARCHAR"/>
+        <result column="slogan" property="slogan" jdbcType="VARCHAR"/>
+        <result column="cat_image" property="catImage" jdbcType="VARCHAR"/>
+        <result column="bg_color" property="bgColor" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="categoryAndSubCategory" type="site.teamo.mall.bean.vo.CategoryVO">
+        <id column="id" property="id" javaType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="INTEGER"/>
+        <result column="father_id" property="fatherId" jdbcType="INTEGER"/>
+        <collection property="subCatList" ofType="site.teamo.mall.bean.vo.SubCategoryVO">
+            <id column="sub_id" property="subId" javaType="INTEGER"/>
+            <result column="sub_name" property="subName" jdbcType="VARCHAR"/>
+            <result column="sub_type" property="subType" jdbcType="INTEGER"/>
+            <result column="sub_father_id" property="subFatherId" jdbcType="INTEGER"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="sixNewItems" type="site.teamo.mall.bean.vo.NewItemsVO">
+        <id column="root_cat_id" property="rootCatId"/>
+        <result column="root_cat_name" property="rootCatName"/>
+        <result column="slogan" property="slogan"/>
+        <result column="cat_image" property="catImage"/>
+        <result column="bg_color" property="bgColor"/>
+        <collection property="simpleItemList" ofType="site.teamo.mall.bean.vo.SimpleItemVO">
+            <id column="item_id" property="itemId"/>
+            <result column="item_name" property="itemName"/>
+            <result column="item_url" property="itemUrl"/>
+        </collection>
+    </resultMap>
+
+    <select id="getSubCatList" parameterType="java.lang.Integer" resultMap="categoryAndSubCategory">
+        select
+            f.id as id,
+            f.name as name,
+            f.type as type,
+            f.father_id as father_id,
+            c.id as sub_id,
+            c.name as sub_name,
+            c.type as sub_type,
+            c.father_id as sub_father_id
+        from
+            category f
+            left join
+            category c
+            on f.id=c.father_id
+        where f.father_id=#{fatherId}
+    </select>
+
+    <select id="getSixNewItemsLazy" parameterType="java.lang.Integer" resultMap="sixNewItems">
+        select
+            f.id as root_cat_id,
+            f.name as root_cat_name,
+            f.slogan as slogan,
+            f.cat_image as cat_image,
+            f.bg_color as bg_color,
+            i.id as item_id,
+            i.item_name as item_name,
+            ii.url as item_url
+        from
+            category f
+        left join
+            items i
+        on f.id=i.root_cat_id
+        left join
+            items_img ii
+        on i.id=ii.item_id
+        where
+            f.type=1
+        and
+            ii.is_main=1
+        and
+            f.id=#{rootCatId}
+        order by
+            i.created_time
+        limit 0,6
+    </select>
+
 </mapper>

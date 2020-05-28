@@ -16,4 +16,49 @@
     <result column="created_time" property="createdTime" jdbcType="TIMESTAMP" />
     <result column="updated_time" property="updatedTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <resultMap id="commentCount" type="site.teamo.mall.bean.vo.CommentCountsVO" >
+    <result column="count" property="count" jdbcType="VARCHAR" />
+    <result column="comment_level" property="commentLevel" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <resultMap id="itemComments" type="site.teamo.mall.bean.vo.ItemCommentVO" >
+    <result column="comment_level" property="commentLevel"/>
+    <result column="content" property="content"/>
+    <result column="sepc_name" property="sepcName"/>
+    <result column="created_time" property="createdTime"/>
+    <result column="user_face" property="userFace"/>
+    <result column="nickname" property="nickname"/>
+  </resultMap>
+
+  <select id="queryCommentCount" parameterType="java.lang.String" resultMap="commentCount">
+    select
+        count(*) as count,comment_level
+    from
+        items_comments
+    where
+        item_id=#{itemId}
+    group by
+        comment_level
+  </select>
+
+  <select id="queryItemComments" parameterType="java.util.Map" resultMap="itemComments">
+    select
+        ic.comment_level as comment_level,
+        ic.content as content,
+        ic.sepc_name as sepc_name,
+        ic.created_time as created_time,
+        u.face as user_face,
+        u.nickname as nickname
+    from
+        items_comments ic
+    left join
+        users u
+    on u.id=ic.user_id
+    where
+        ic.item_id=#{para.itemId}
+    <if test=" para.commentLevel != null and para.commentLevel != '' ">
+        and ic.comment_level = #{para.commentLevel}
+    </if>
+  </select>
 </mapper>

@@ -15,4 +15,115 @@
     <result column="updated_time" property="updatedTime" jdbcType="TIMESTAMP" />
     <result column="content" property="content" jdbcType="LONGVARCHAR" />
   </resultMap>
+
+  <resultMap id="searchItemMap" type="site.teamo.mall.bean.vo.SearchItemsVO" >
+    <result column="item_id" property="itemId"/>
+    <result column="item_name" property="itemName"/>
+    <result column="sell_counts" property="sellCounts"/>
+    <result column="image_url" property="imgUrl"/>
+    <result column="price_discount" property="price"/>
+  </resultMap>
+
+  <resultMap id="itemBySpecIds" type="site.teamo.mall.bean.vo.ShopcartVO" >
+    <result column="item_id" property="itemId"/>
+    <result column="item_name" property="itemName"/>
+    <result column="item_img_url" property="itemImgUrl"/>
+    <result column="spec_id" property="specId"/>
+    <result column="spec_name" property="specName"/>
+    <result column="price_discount" property="priceDiscount"/>
+    <result column="price_normal" property="priceNormal"/>
+  </resultMap>
+
+  <select id="searchItems" parameterType="java.util.Map" resultMap="searchItemMap">
+    select
+        i.id as item_id,
+        i.item_name as item_name,
+        i.sell_counts as sell_counts,
+        ii.url as image_url,
+        isp.price_discount as price_discount
+    from items i
+    left join items_img ii
+    on i.id=ii.item_id
+    left join
+    (
+        select item_id,min(price_discount) as price_discount
+        from items_spec
+        group by item_id
+    ) isp
+    on isp.item_id=i.id
+    where ii.is_main = 1
+    <if test=" para.key != null and para.key != '' ">
+      and i.item_name like '%${para.key}%'
+    </if>
+    order by
+    <choose>
+      <when test=" para.sort == &quot;c&quot; ">
+        i.sell_counts desc
+      </when>
+      <when test=" para.sort == &quot;p&quot; ">
+        isp.price_discount asc
+      </when>
+      <otherwise>
+        i.item_name asc
+      </otherwise>
+    </choose>
+  </select>
+
+  <select id="searchItemsByThirdCat" parameterType="java.util.Map" resultMap="searchItemMap">
+    select
+      i.id as item_id,
+      i.item_name as item_name,
+      i.sell_counts as sell_counts,
+      ii.url as image_url,
+      isp.price_discount as price_discount
+    from items i
+    left join items_img ii
+    on i.id=ii.item_id
+    left join
+    (
+      select item_id,min(price_discount) as price_discount
+      from items_spec
+      group by item_id
+    ) isp
+    on isp.item_id=i.id
+    where ii.is_main = 1
+    and i.cat_id=#{catId}
+    order by
+    <choose>
+      <when test=" para.sort == &quot;c&quot; ">
+        i.sell_counts desc
+      </when>
+      <when test=" para.sort == &quot;p&quot; ">
+        isp.price_discount asc
+      </when>
+      <otherwise>
+        i.item_name asc
+      </otherwise>
+    </choose>
+  </select>
+
+  <select id="queryItemBySpecIds" parameterType="java.util.List" resultMap="itemBySpecIds">
+    select
+        i.id as item_id,
+        i.item_name as item_name,
+        ii.url as item_img_url,
+        isp.id as spec_id,
+        isp.name as spec_name,
+        isp.price_discount as price_discount,
+        isp.price_normal as price_normal
+    from
+        items_spec isp
+    left join
+        items i
+    on i.id=isp.item_id
+    left join
+        items_img ii
+    on i.id = ii.item_id
+    where ii.is_main =1
+    and
+        isp.id in
+        <foreach collection="paraList" index="index" item="specId" open="(" separator="," close=")">
+          #{specId}
+        </foreach>
+  </select>
 </mapper>
