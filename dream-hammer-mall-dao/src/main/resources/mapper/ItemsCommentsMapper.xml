@@ -61,4 +61,40 @@
         and ic.comment_level = #{para.commentLevel}
     </if>
   </select>
+
+    <insert id="saveComment" parameterType="java.util.Map">
+        insert into items_comments(id, user_id, item_id, item_name, item_spec_id, sepc_name, comment_level, content,created_time, updated_time)
+        values
+        <foreach collection="para.commentList" item="comment" index="index" separator=",">
+            (
+            #{comment.commentId},
+            #{para.userId},
+            #{comment.itemId},
+            #{comment.itemName},
+            #{comment.itemSpecId},
+            #{comment.itemSpecName},
+            #{comment.commentLevel},
+            #{comment.content},
+            now(),
+            now()
+            )
+        </foreach>
+    </insert>
+
+    <select id="queryMyComment" parameterType="java.lang.String" resultType="site.teamo.mall.bean.vo.MyCommentVO">
+        select ic.id           as commentId,
+               ic.content      as content,
+               ic.created_time as createdTime,
+               ic.item_id      as itemId,
+               ic.sepc_name    as specName,
+               ic.item_name    as itemName,
+               ii.url          as itemImg
+        from items_comments ic
+                 left join items_img ii on ic.item_id = ii.item_id
+        where user_id = #{userId}
+          and ii.is_main = 1
+        order by ic.created_time desc
+    </select>
+
+
 </mapper>

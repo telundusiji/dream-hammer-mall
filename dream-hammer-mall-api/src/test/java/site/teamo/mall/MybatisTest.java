@@ -13,11 +13,13 @@ import site.teamo.mall.dao.StudentDao1;
 import site.teamo.mall.dao.StudentDao2;
 import site.teamo.mall.dao.StudentDao3;
 import site.teamo.mall.dao.StudentDao4;
+import site.teamo.mall.service.StudentService;
+import site.teamo.mall.service.impl.StudentServiceImpl;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@EnableAutoConfiguration
-@MapperScan(basePackages = {"site.teamo.mall.dao"})
+@SpringBootTest(classes = Application.class)
+//@EnableAutoConfiguration
+//@MapperScan(basePackages = {"site.teamo.mall.dao"})
 public class MybatisTest {
 
     @Autowired
@@ -31,6 +33,9 @@ public class MybatisTest {
 
     @Autowired
     private StudentDao4 studentDao4;
+
+    @Autowired
+    private StudentServiceImpl studentService;
 
     @Test
     public void test1(){
@@ -86,5 +91,10 @@ public class MybatisTest {
         Assert.assertEquals(1L,studentDao4.updateByPrimaryKey(student)*1L);
         Assert.assertEquals(student,studentDao4.mySelectOne("1"));
         Assert.assertEquals(1L,studentDao4.deleteByPrimaryKey(1)*1L);
+    }
+
+    @Test
+    public void test5(){
+        studentService.testMain();
     }
 }

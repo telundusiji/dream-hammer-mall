@@ -30,4 +30,10 @@ public interface ItemService {
     PagedGridResult searchItemsByThirdCat(Integer catId, String sort, Integer page, Integer pageSize);
 
     List<ShopcartVO> queryItemBySpecIds(String specIds);
+
+    ItemsSpec queryItemSpecBySpecId(String specId);
+
+    String queryItemMainImgById(String itemId);
+
+    void decreaseItemSpecStock(String specId,Integer buyCounts);
 }

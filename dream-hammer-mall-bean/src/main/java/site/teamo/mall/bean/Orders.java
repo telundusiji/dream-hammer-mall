@@ -1,9 +1,19 @@
 package site.teamo.mall.bean;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import java.util.Date;
 
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Orders {
     /**
      * 订单主键 同时也是订单编号

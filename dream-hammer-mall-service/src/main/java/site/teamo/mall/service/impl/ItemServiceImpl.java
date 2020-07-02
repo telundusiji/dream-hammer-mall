@@ -12,6 +12,7 @@ import site.teamo.mall.bean.ItemsParam;
 import site.teamo.mall.bean.ItemsSpec;
 import site.teamo.mall.bean.vo.*;
 import site.teamo.mall.common.enums.CommentLevel;
+import site.teamo.mall.common.enums.YesNo;
 import site.teamo.mall.common.util.DesensitizationUtil;
 import site.teamo.mall.common.util.PagedGridResult;
 import site.teamo.mall.dao.*;
@@ -109,29 +110,56 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public PagedGridResult searchItems(String key, String sort, Integer page, Integer pageSize) {
-        Map<String,Object> para = new HashMap<>();
-        para.put("key",key);
-        para.put("sort",sort);
+        Map<String, Object> para = new HashMap<>();
+        para.put("key", key);
+        para.put("sort", sort);
 
-        PageHelper.startPage(page,pageSize);
+        PageHelper.startPage(page, pageSize);
         List<SearchItemsVO> searchItemsVOS = itemsMapper.searchItems(para);
-        return PagedGridResult.getPagedGridResult(searchItemsVOS,page);
+        return PagedGridResult.getPagedGridResult(searchItemsVOS, page);
     }
 
     @Override
     public PagedGridResult searchItemsByThirdCat(Integer catId, String sort, Integer page, Integer pageSize) {
-        Map<String,Object> para = new HashMap<>();
-        para.put("catId",catId);
-        para.put("sort",sort);
+        Map<String, Object> para = new HashMap<>();
+        para.put("catId", catId);
+        para.put("sort", sort);
 
-        PageHelper.startPage(page,pageSize);
+        PageHelper.startPage(page, pageSize);
         List<SearchItemsVO> searchItemsVOS = itemsMapper.searchItems(para);
-        return PagedGridResult.getPagedGridResult(searchItemsVOS,page);
+        return PagedGridResult.getPagedGridResult(searchItemsVOS, page);
     }
 
     @Override
     public List<ShopcartVO> queryItemBySpecIds(String specIds) {
         return itemsMapper.queryItemBySpecIds(Arrays.asList(specIds.split(",")));
+    }
+
+    @Override
+    public ItemsSpec queryItemSpecBySpecId(String specId) {
+        return itemsSpecMapper.selectByPrimaryKey(specId);
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public String queryItemMainImgById(String itemId) {
+        ItemsImg itemsImg = new ItemsImg();
+        itemsImg.setItemId(itemId);
+        itemsImg.setIsMain(YesNo.YES.type);
+        ItemsImg ii = itemsImgMapper.selectOne(itemsImg);
+        return ii == null ? "" : ii.getUrl();
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    @Override
+    public void decreaseItemSpecStock(String specId, Integer buyCounts) {
+        Map<String,Object> para = new HashMap<>();
+        para.put("specId",specId);
+        para.put("buyCounts",buyCounts);
+        Integer result = itemsSpecMapper.decreaseItemSpecStock(para);
+        if(result<1){
+            throw new RuntimeException("库存不足");
+        }
     }
 
 
