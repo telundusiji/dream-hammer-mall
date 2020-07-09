@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Objects;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -21,4 +23,16 @@ public class ShopcartBO {
     private String priceDiscount;
     private String priceNormal;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ShopcartBO that = (ShopcartBO) o;
+        return Objects.equals(specId, that.specId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(specId);
+    }
 }

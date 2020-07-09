@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import site.teamo.mall.bean.bo.ShopcartBO;
+
+import java.util.List;
 
 @Data
 @Builder

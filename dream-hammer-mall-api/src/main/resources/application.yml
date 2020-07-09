@@ -24,6 +24,11 @@ spring:
       pool-name: DataSourceHikariCP #连接池名称
       max-lifetime: 1800000     #连接生命时长，空闲未被使用超过最大时长则被释放
       connection-test-query: select 1
+  redis:
+    database: 1
+    host: 192.168.56.90
+    port: 6379
+    password: 123456
 #*******************************************
 #         mybatis 配置                      #
 #*******************************************

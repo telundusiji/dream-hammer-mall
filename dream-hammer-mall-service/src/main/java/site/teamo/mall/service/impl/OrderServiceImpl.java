@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import site.teamo.mall.bean.*;
+import site.teamo.mall.bean.bo.ShopcartBO;
 import site.teamo.mall.bean.bo.SubmitOrderBO;
 import site.teamo.mall.bean.vo.MerchantOrdersVO;
 import site.teamo.mall.bean.vo.OrderVO;
@@ -21,6 +22,7 @@ import site.teamo.mall.service.OrderService;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,7 +48,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
-    public OrderVO createOrder(SubmitOrderBO submitOrderBO) {
+    public OrderVO createOrder(Map<String, ShopcartBO> shopcartBOMap, SubmitOrderBO submitOrderBO) {
         Integer postAmount = 0;
         //step:新订单
         UserAddress address = addressService.queryAddress(submitOrderBO.getUserId(), submitOrderBO.getAddressId());
@@ -77,13 +79,14 @@ public class OrderServiceImpl implements OrderService {
         Integer realPayAmount = itemSpec.stream().mapToInt(x -> x.getPriceDiscount() * 1).sum();
         itemSpec.stream().map(x -> {
             Items item = itemService.queryItemById(x.getItemId());
+            ShopcartBO shopcartBO = shopcartBOMap.remove(x.getId());
             return OrderItems.builder()
                     .id(sid.nextShort())
                     .orderId(orderId)
                     .itemId(x.getItemId())
                     .itemName(item.getItemName())
                     .itemImg(itemService.queryItemMainImgById(x.getItemId()))
-                    .buyCounts(1)
+                    .buyCounts(shopcartBO.getBuyCounts())
                     .itemSpecId(x.getId())
                     .itemSpecName(x.getName())
                     .price(x.getPriceDiscount())

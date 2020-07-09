@@ -7,9 +7,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import site.teamo.mall.bean.Users;
+import site.teamo.mall.bean.bo.ShopcartBO;
 import site.teamo.mall.bean.bo.UserBo;
 import site.teamo.mall.common.util.CookieUtils;
 import site.teamo.mall.common.util.MallJSONResult;
@@ -17,6 +19,9 @@ import site.teamo.mall.service.UserService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Api(value = "注册登录", tags = "注册登录")
 @RestController
@@ -25,8 +30,14 @@ public class PassportController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PassportController.class);
 
+    private static final String COOKIE_SHOP_CART = "shopcart";
+    private static final String REDIS_KEY_SHOP_CART = "shopCart";
+
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     @ApiOperation(value = "用户名是否存在", notes = "用户名是否存在")
     @GetMapping("/usernameIsExist")
@@ -72,6 +83,7 @@ public class PassportController {
             Users users = userService.createUser(userBo);
             users.cleanUpSensitiveInformation();
             CookieUtils.setCookie(request, response, "user", JSON.toJSONString(users), true);
+            margeShopCart(users.getId(),request,response);
             return MallJSONResult.ok(users);
         } catch (Exception e) {
             LOGGER.error("register user failed", e);
@@ -96,6 +108,7 @@ public class PassportController {
             }
             users.cleanUpSensitiveInformation();
             CookieUtils.setCookie(request, response, "user", JSON.toJSONString(users), true);
+            margeShopCart(users.getId(),request,response);
             return MallJSONResult.ok(users);
         } catch (Exception e) {
             LOGGER.error("register user failed", e);
@@ -109,7 +122,51 @@ public class PassportController {
     public MallJSONResult logout(HttpServletRequest request, HttpServletResponse response, @RequestParam String userId) {
 
         CookieUtils.deleteCookie(request, response, "user");
-
+        CookieUtils.deleteCookie(request, response, COOKIE_SHOP_CART);
         return MallJSONResult.ok();
+    }
+
+    public void margeShopCart(String userId, HttpServletRequest request, HttpServletResponse response) {
+        String redisShopCart = redisTemplate.opsForValue().get(REDIS_KEY_SHOP_CART + ":" + userId);
+        String cookieShopCart = CookieUtils.getCookieValue(request, COOKIE_SHOP_CART, true);
+
+        /**
+         * 如果redis和cookie中购物车都为空
+         */
+        if (StringUtils.isBlank(redisShopCart) && StringUtils.isBlank(cookieShopCart)) {
+            return;
+        }
+
+        /**
+         * 如果cookie中购物车为空，redis不为空
+         */
+        if (StringUtils.isBlank(cookieShopCart)) {
+            CookieUtils.setCookie(request, response, COOKIE_SHOP_CART, redisShopCart, true);
+            return;
+        }
+
+        /**
+         * 如果cookie中购物车为空，redis中购物车不为空
+         */
+        if (StringUtils.isBlank(redisShopCart)) {
+            redisTemplate.opsForValue().set(REDIS_KEY_SHOP_CART + ":" + userId, cookieShopCart);
+            return;
+        }
+
+        /**
+         * 如果cookie和redis购物车都不为空，则合并
+         */
+
+        Map<String, ShopcartBO> redisShopCartMap = JSON.parseArray(redisShopCart, ShopcartBO.class)
+                .stream().collect(Collectors.toMap(ShopcartBO::getSpecId, x -> x));
+        Map<String, ShopcartBO> cookieShopCartMap = JSON.parseArray(cookieShopCart, ShopcartBO.class)
+                .stream().collect(Collectors.toMap(ShopcartBO::getSpecId, x -> x));
+
+        redisShopCartMap.putAll(cookieShopCartMap);
+        String result = JSON.toJSONString(redisShopCartMap.entrySet().stream().map(x->x.getValue()).collect(Collectors.toList()));
+        redisTemplate.opsForValue().set(REDIS_KEY_SHOP_CART + ":" + userId, result);
+        CookieUtils.setCookie(request, response, COOKIE_SHOP_CART, result, true);
+
+
     }
 }
